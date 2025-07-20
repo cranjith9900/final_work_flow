@@ -7,6 +7,8 @@ import { parse } from 'path';
 import axios from 'axios';
 import twilio from 'twilio';
 import prisma from 'src/llb/db';
+import { AppConstant } from '@lib';
+// import { AppConstant } from 'src/lib/app.constant';
 
 const accountSid = process.env.TWILIO_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
@@ -19,7 +21,6 @@ const zapQueue = new Queue('zap-queue', {
   },
 });
 
-;
 
 async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -30,7 +31,7 @@ async function startWorker() {
   const zapRunRepo = AppDataSource.getRepository(ZapRun);
 
   const worker = new Worker(
-    'zap-queue',
+    AppConstant.WORKER_QUEUE,
     async (job) => {
       const { zapRunId, stage, id } = job.data;
       console.log(`➡️ Processing zapRunId: ${zapRunId}, ${stage}, ${id}`);
