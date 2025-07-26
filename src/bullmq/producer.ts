@@ -1,7 +1,6 @@
 import { zapQueue } from './queue';
 import { AppDataSource } from '../config/ds';
-import { ZapRunOutbox } from 'src/Zaps/ZapRunOutbox.entity';
-
+import { ZapRunOutbox } from '../Zaps/ZapRunOutbox.entity'; // ✅ Fixed path
 
 async function main() {
   await AppDataSource.initialize();
@@ -17,7 +16,7 @@ async function main() {
       continue;
     }
 
-    console.log("Found rows:", pendingRows);
+    console.log('Found rows:', pendingRows);
 
     // Add jobs to queue
     for (const row of pendingRows) {
@@ -28,7 +27,7 @@ async function main() {
     }
 
     // Delete enqueued rows
-    const ids = pendingRows.map(row => row.id);
+    const ids = pendingRows.map((row) => row.id);
     await repo.delete(ids);
 
     await sleep(3000);
@@ -36,7 +35,7 @@ async function main() {
 }
 
 function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-main(); 
+main();

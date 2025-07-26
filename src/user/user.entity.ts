@@ -1,10 +1,5 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  OneToMany,
-} from 'typeorm';
-import { Zap } from 'src/Zaps/Zap.entity';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Zap } from '../Zaps/Zap.entity';
 
 @Entity()
 export class User {
@@ -20,6 +15,6 @@ export class User {
   @Column()
   password: string;
 
-  @OneToMany(() => Zap, zap => zap.user)
+  @OneToMany(() => Zap, (zap) => zap.user)
   zaps: Zap[];
 }

@@ -2,16 +2,13 @@ require('dotenv').config();
 
 import { Worker, Queue } from 'bullmq';
 import { AppDataSource } from '../config/ds';
-import { ZapRun } from 'src/Zaps/ZapRun.entity';
-import { parse } from 'path';
+import { ZapRun } from '../Zaps/ZapRun.entity'; // ✅ fixed
+import { AppConstant } from '../lib/app.constant'; // ✅ fixed
 import axios from 'axios';
 import twilio from 'twilio';
-import prisma from 'src/llb/db';
-import { AppConstant } from '@lib';
-// import { AppConstant } from 'src/lib/app.constant';
 
-const accountSid = process.env.TWILIO_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
+const accountSid = 'AC44924648859c82f0756740b3239626e5';
+const authToken = 'dfbd4284d16f8405a9a5883dd9dcc57c';
 const client = twilio(accountSid, authToken);
 
 const zapQueue = new Queue('zap-queue', {
@@ -20,7 +17,6 @@ const zapQueue = new Queue('zap-queue', {
     port: 6379,
   },
 });
-
 
 async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -31,7 +27,7 @@ async function startWorker() {
   const zapRunRepo = AppDataSource.getRepository(ZapRun);
 
   const worker = new Worker(
-    AppConstant.WORKER_QUEUE,
+    'zap-queue',
     async (job) => {
       const { zapRunId, stage, id } = job.data;
       console.log(`➡️ Processing zapRunId: ${zapRunId}, ${stage}, ${id}`);
@@ -48,14 +44,9 @@ async function startWorker() {
         return;
       }
 
-      
-
       const currentAction = zapRun.zap.actions.find(
-        (a) => a.sortingOrder === stage
+        (a) => a.sortingOrder === stage,
       );
-// const currentAction = await prisma.
-//       console.log(`➡️ Current action:`, currentAction);
-// const currentAction = await prisma.zap_run.findFirst({where:{id:zapRunId}})
 
       if (!currentAction) {
         console.error('❌ Current action not found');
@@ -66,27 +57,33 @@ async function startWorker() {
 
       if (currentAction.id === 'mail') {
         console.log('📧 Mock: Sending email...');
-        // await sendEmail(...)
+        // await sendEmail(...);
       }
 
       if (currentAction.actionId === 'whatsapp') {
         console.log('📱 Sending WhatsApp message via API...');
 
-  const to = zapRun.metadata?.phone || '+919663793349';
-  const contentSid = currentAction.metadata?.contentSid || 'HX350d429d32e64a552466cafecbe95f3c';
-  const variables = currentAction.metadata?.variables || { 1: '12/1', 2: '3pm' };
+        const to = zapRun.metadata?.phone || '+919663793349';
+        const contentSid = 'HX350d429d32e64a552466cafecbe95f3c';
+        const variables = currentAction.metadata?.variables || {
+          1: '12/1',
+          2: '3pm',
+        };
 
-  try {
-    const response = await axios.post('http://localhost:3000/zap/watsapp', {
-      to,
-      contentSid,
-      variables,
-    });
+        try {
+          const response = await axios.post(
+            'http://localhost:3000/zap/watsapp',
+            {
+              to,
+              contentSid,
+              variables,
+            },
+          );
 
-    console.log('✅ WhatsApp API response:', response.data);
-  } catch (error) {
-    console.error('❌ Error calling WhatsApp API:', error.message);
-  }
+          console.log('✅ WhatsApp API response:', response.data);
+        } catch (error) {
+          console.error('❌ Error calling WhatsApp API:', error.message);
+        }
       }
 
       await sleep(500);
@@ -107,12 +104,8 @@ async function startWorker() {
         host: 'localhost',
         port: 6379,
       },
-    }
+    },
   );
 }
 
-startWorker(); // ✅ Call the function here!
-
-
-
-
+startWorker();
